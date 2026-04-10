@@ -1,0 +1,100 @@
+FrameWidgetClass zen_mod_setting_container {
+ ignorepointer 1
+ color 0 0 0 0
+ position 0 0
+ size 1 30
+ hexactpos 1
+ vexactpos 1
+ hexactsize 0
+ vexactsize 1
+ {
+  GridSpacerWidgetClass zen_mod_setting {
+   ignorepointer 0
+   color 0 0 0 0
+   position 0 0
+   size 1 30
+   hexactpos 1
+   vexactpos 1
+   hexactsize 0
+   vexactsize 1
+   style DayZDefaultPanel
+   "no focus" 1
+   Padding 0
+   Margin 0
+   "Size To Content H" 1
+   Columns 2
+   Rows 1
+   {
+    FrameWidgetClass zen_mod_setting_panel {
+     ignorepointer 1
+     position 0 0
+     size 0.5 0.6
+     hexactpos 1
+     vexactpos 1
+     hexactsize 0
+     vexactsize 0
+     {
+      TextWidgetClass zen_mod_setting_label {
+       ignorepointer 1
+       size 1 0.55
+       valign center_ref
+       hexactpos 1
+       vexactpos 1
+       hexactsize 0
+       vexactsize 0
+       text "SETTING"
+       font "gui/fonts/sdf_MetronLight24"
+       "text offset" 8 0
+       "exact text" 0
+       "exact text size" 18
+       "text valign" center
+      }
+     }
+    }
+	FrameWidgetClass zen_mod_setting_option
+	{
+	 ignorepointer 0
+	 position 0 0
+	 size 0.5 1
+	 hexactpos 1
+	 vexactpos 1
+	 hexactsize 0
+	 vexactsize 0
+	 {
+	  TextWidgetClass zen_mod_setting_value
+	  {
+	   ignorepointer 1
+	   position 0 0
+	   size 1 1
+	   hexactpos 1
+	   vexactpos 1
+	   hexactsize 0
+	   vexactsize 0
+	   valign center_ref
+	   style Normal
+	   font "gui/fonts/sdf_MetronLight24"
+	   "exact text" 1
+	   "exact text size" 18
+	   "text halign" center
+	   "text valign" center
+	   text ""
+	  }
+	 }
+	}
+   }
+  }
+
+  PanelWidgetClass zen_mod_setting_disable {
+   visible 0
+   ignorepointer 1
+   color 0.1569 0.1569 0.1569 0.902
+   position 0 0
+   size 1 1
+   hexactpos 1
+   vexactpos 1
+   hexactsize 0
+   vexactsize 0
+   style rover_sim_colorable
+  }
+ }
+}
