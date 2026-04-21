@@ -3,7 +3,7 @@ class ZenObjectHookDbBase: ZenConfigBase
 	// -------------------------
 	// CONFIG SETTINGS
 	// -------------------------
-	override string 	GetRootFolder() 			{ return ZenConstants.GetDbFolder("hookspawnerdb"); }
+	override string 	GetRootFolder() 			{ return ZenConstants.GetDbFolder("zenarchist", "hookspawnerdb"); }
 	override string    	GetCurrentVersion()   		{ return "1.29.1"; }
 	override bool		ShouldLoadOnServer() 		{ return true; }
 	override bool 		IsServerOnlyConfig()		{ return true; }

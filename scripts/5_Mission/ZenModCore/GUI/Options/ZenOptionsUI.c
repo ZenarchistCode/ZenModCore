@@ -7,6 +7,49 @@ class ZenOptionsUIUtils
 		s_NextUserId++;
 		return s_NextUserId;
 	}
+	
+	static void SortSettingsByDisplayPriority(array<ref ZenModSetting> settings)
+	{
+		if (!settings)
+			return;
+	
+		int count = settings.Count();
+		if (count <= 1)
+			return;
+	
+		for (int i = 0; i < count - 1; i++)
+		{
+			for (int j = i + 1; j < count; j++)
+			{
+				ZenModSetting left = settings[i];
+				ZenModSetting right = settings[j];
+	
+				if (!left || !right)
+					continue;
+	
+				bool shouldSwap = false;
+	
+				if (left.DisplayPriority > right.DisplayPriority)
+				{
+					shouldSwap = true;
+				}
+				else
+				{
+					if (left.DisplayPriority == right.DisplayPriority)
+					{
+						if (left.Title > right.Title)
+							shouldSwap = true;
+					}
+				}
+	
+				if (shouldSwap)
+				{
+					settings[i] = right;
+					settings[j] = left;
+				}
+			}
+		}
+	}
 }
 
 class ZenOptionsUIRow
@@ -28,7 +71,7 @@ class ZenOptionsUIRow
 	{
 		m_Setting = setting;
 
-		m_RowRoot = GetGame().GetWorkspace().CreateWidgets(LAYOUT_ROW, parent);
+		m_RowRoot = g_Game.GetWorkspace().CreateWidgets(LAYOUT_ROW, parent);
 		if (!m_RowRoot)
 			return;
 

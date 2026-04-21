@@ -40,7 +40,7 @@ class ZenCoreConfig : ZenConfigBase
 	}
 	
 	override string 	GetFolderName()       		{ return "Core"; }
-	override string    	GetCurrentVersion()   		{ return "1.29.1"; }
+	override string    	GetCurrentVersion()   		{ return "1.29.2"; }
 	override bool 		ShouldLoadOnClient()		{ return true; }
 	override bool		ShouldLoadOnServer() 		{ return true; }
 	override bool		ShouldSyncToClient()		{ return true; }
@@ -107,6 +107,20 @@ class ZenCoreConfig : ZenConfigBase
 		return ZenCore_AdminConfig.AdminIDs.Find(uid) != -1;
 	}
 	
+	bool IsAdmin(PlayerIdentity id)
+	{
+		if (!id)
+			return false;
+		
+		if (IsAdmin(id.GetId()))
+			return true;
+		
+		if (IsAdmin(id.GetPlainId()))
+			return true;
+		
+		return false;
+	}
+	
 	bool IsModerator(string uid)
 	{
 		return ZenCore_AdminConfig.AdminIDs.Find(uid) != -1 || ZenCore_AdminConfig.ModeratorIDs.Find(uid) != -1;
@@ -160,6 +174,37 @@ class ZenCoreConfig : ZenConfigBase
 		ZenCore_AdminConfig.AdminIDs.Copy(AdminIDs_Temp);
 		ZenCore_AdminConfig.ModeratorIDs.Copy(ModeratorIDs_Temp);
 	}
+	
+	override void Migrate(string fromVersion, string toVersion) 
+	{
+		if (toVersion == "1.29.2")
+		{
+			if (ZenCore_AdminConfig)
+			{
+				ZenCore_AdminConfig.EnableCommands = false;
+			}
+			
+			if (ZenCore_GeneralConfig)
+			{
+				ZenCore_GeneralConfig.PreventHologramPlacementAt000 = false;
+				ZenCore_GeneralConfig.DeleteObjectsAt000 = false;
+			}
+			
+			if (ZenCore_LogConfig)
+			{
+				ZenCore_LogConfig.EnableLogs = false;
+			}
+			
+			if (ZenCore_DiscordConfig)
+			{
+				ZenCore_DiscordConfig.EnableDiscord = false;
+				if (ZenCore_DiscordConfig.KillfeedConfig)
+				{
+					ZenCore_DiscordConfig.KillfeedConfig.EnableKillfeed = false;
+				}
+			}
+		}
+	}
 }
 
 // -------------------------
@@ -172,11 +217,10 @@ class ZenAdminConfig
 	ref array<string> AdminIDs;
 	ref array<string> ModeratorIDs;
 	ref map<string, string> CommandURLs;
-	
-	
+
 	void ZenAdminConfig()
 	{
-		EnableCommands = true;
+		EnableCommands = false;
 		CommandPrefix = "!";
 		AdminIDs = new array<string>;
 		AdminIDs.Insert("4s_12UDE-PKYemc7adlZyKGVSrwzIMW0T32Q69_YOURUID");
@@ -197,8 +241,8 @@ class ZenGeneralConfig
 	
 	void ZenGeneralConfig()
 	{
-		PreventHologramPlacementAt000 = true;
-		DeleteObjectsAt000 = true;
+		PreventHologramPlacementAt000 = false;
+		DeleteObjectsAt000 = false;
 	}
 }
 
@@ -214,7 +258,7 @@ class ZenLoggerConfig
 	
 	void ZenLoggerConfig()
 	{
-		EnableLogs = true;
+		EnableLogs = false;
 		FileSuffix = ".log";
 		KeepLogsDaysCount = 14;
 		LogFolderExcludeList = new array<string>;
@@ -236,7 +280,7 @@ class ZenDiscordConfig
 
 	void ZenDiscordConfig()
 	{
-		EnableDiscord = true;
+		EnableDiscord = false;
 		ServerName = ""; //g_Game.GetWorldName(); // g_Game is not available upon cfg load unfortunately. Set it on MissionInit.
 		PingAdminCommand = "admin";
 		AdminWebhooks = new array<string>;
@@ -260,11 +304,11 @@ class ZenKillfeedConfig
 	
 	void ZenKillfeedConfig()
 	{
-		EnableKillfeed = true;
+		EnableKillfeed = false;
 		KillfeedWebhooks = new array<string>;
 		KillfeedWebhooks.Insert("Insert killfeed channel webhooks here");
-		DisplayPlayerSteamID = true;
-		DisplayKillLocation = true;
-		DisplayKillsByAI = true;
+		DisplayPlayerSteamID = false;
+		DisplayKillLocation = false;
+		DisplayKillsByAI = false;
 	}
 }

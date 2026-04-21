@@ -279,7 +279,7 @@ class ZenObjectHookSpawner
 		Cleanup();
 	}
 	
-	static Object CreateObject(Object parentObj, ZenObjectHookDef def)
+	Object CreateObject(Object parentObj, ZenObjectHookDef def)
 	{
 		if (!parentObj)
 			return null;

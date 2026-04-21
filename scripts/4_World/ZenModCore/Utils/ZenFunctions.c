@@ -288,23 +288,6 @@ class ZenFunctions: ZenGameFunctions
 		return pitch;
 	}
 
-	//! Aligns given object to underlying terrain
-	static void AlignToTerrain(Object obj)
-	{
-		vector transform[4];
-		obj.GetTransform(transform);
-		vector ground_position, ground_dir; 
-		int component;
-		DayZPhysics.RaycastRV(transform[3], transform[3] + transform[1] * -1000, ground_position, ground_dir, component, null, null, null, false, true);
-		vector surface_normal = g_Game.SurfaceGetNormal(ground_position[0], ground_position[2]);
-		vector local_ori = obj.GetDirection();
-		transform[0] = surface_normal * local_ori;
-		transform[1] = surface_normal;
-		transform[2] = surface_normal * (local_ori * vector.Up);
-		obj.SetTransform(transform);
-		obj.Update();
-	}
-
 	//! Orientates given object to vector pos. Thanks ChatGPT ;) I might have failed math, but I still know how to write a good prompt
 	static void OrientObjectToPosition(Object object, vector targetPos, vector oriOffset = "0 0 0")
 	{
@@ -552,43 +535,9 @@ class ZenFunctions: ZenGameFunctions
 		for (int x = 0; x < players.Count(); x++)
 		{
 			PlayerBase pb = PlayerBase.Cast(players.Get(x));
-			if (pb && pb.GetIdentity().GetId() == id)
+			if (pb && (pb.GetIdentity().GetId() == id || pb.GetIdentity().GetPlainId() == id))
 			{
 				return pb;
-			}
-		}
-
-		return null;
-	}
-
-	//! Get the EntityAI attached to the given slot NAME on the given entity 
-	static EntityAI GetItemOnSlotBySlotName(notnull EntityAI entityAI, string slot_type)
-	{
-		return GetItemOnSlotBySlotID(entityAI, InventorySlots.GetSlotIdFromString(slot_type));
-	}
-
-	//! Get the EntityAI attached to the given slot ID on the given entity 
-	static EntityAI GetItemOnSlotBySlotID(notnull EntityAI entityAI, int slot_id)
-	{
-		EntityAI attachedEAI = entityAI.GetInventory().FindAttachment(slot_id);
-		return attachedEAI;
-	}
-
-	//! Get the first attached entity found with the given classname
-	static EntityAI GetItemOnSlotByType(notnull EntityAI entityAI, string className)
-	{
-		if (!entityAI.GetInventory())
-			return null;
-
-		int slotId;
-		for (int i = 0; i < entityAI.GetInventory().GetAttachmentSlotsCount(); i++)
-		{
-			slotId = entityAI.GetInventory().GetAttachmentSlotId(i);
-			EntityAI attachedEAI = GetItemOnSlotBySlotID(entityAI, slotId);
-			if (attachedEAI != null)
-			{
-				if (attachedEAI.GetType() == className)
-					return attachedEAI;
 			}
 		}
 
@@ -628,7 +577,42 @@ class ZenFunctions: ZenGameFunctions
 	
 		return found;
 	}
+
+	//! Get the EntityAI attached to the given slot NAME on the given entity 
+	static EntityAI GetItemOnSlotBySlotName(notnull EntityAI entityAI, string slot_type)
+	{
+		return GetItemOnSlotBySlotID(entityAI, InventorySlots.GetSlotIdFromString(slot_type));
+	}
+
+	//! Get the EntityAI attached to the given slot ID on the given entity 
+	static EntityAI GetItemOnSlotBySlotID(notnull EntityAI entityAI, int slot_id)
+	{
+		EntityAI attachedEAI = entityAI.GetInventory().FindAttachment(slot_id);
+		return attachedEAI;
+	}
+
+	//! Get the first attached entity found with the given classname
+	static EntityAI GetItemOnSlotByType(notnull EntityAI entityAI, string className)
+	{
+		if (!entityAI.GetInventory())
+			return null;
+
+		int slotId;
+		for (int i = 0; i < entityAI.GetInventory().GetAttachmentSlotsCount(); i++)
+		{
+			slotId = entityAI.GetInventory().GetAttachmentSlotId(i);
+			EntityAI attachedEAI = GetItemOnSlotBySlotID(entityAI, slotId);
+			if (attachedEAI != null)
+			{
+				if (attachedEAI.GetType() == className)
+					return attachedEAI;
+			}
+		}
+
+		return null;
+	}
 	
+	//! WARNING: This is extremely laggy to use on every tick - should only be used sparingly and cached if possible (ie. do not use in funcs like ActionCondition)
 	static TerritoryFlag GetNearestTerritoryFlag(vector pos)
 	{
 #ifdef DZ_Expansion_BaseBuilding
@@ -646,7 +630,7 @@ class ZenFunctions: ZenGameFunctions
 		array<CargoBase> proxyCargos = new array<CargoBase>;
 
 		float theRadius = GameConstants.REFRESHER_RADIUS * 1.5;
-		GetGame().GetObjectsAtPosition3D(pos, theRadius, objects, proxyCargos);
+		g_Game.GetObjectsAtPosition3D(pos, theRadius, objects, proxyCargos);
 		TerritoryFlag theFlag;
 
 		for (int i = 0; i < objects.Count(); i++)

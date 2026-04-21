@@ -1,5 +1,23 @@
 modded class PlayerBase
 {
+	protected bool m_ZenCore_IsAdmin;
+	
+	void PlayerBase()
+	{
+		m_ZenCore_IsAdmin = false;
+	}
+	
+	void SetZenAdmin(bool state)
+	{
+		m_ZenCore_IsAdmin = state;
+		ZMPrint("[ZenCore Admin Status=" + state);
+	}
+	
+	bool IsZenAdmin()
+	{
+		return m_ZenCore_IsAdmin;
+	}
+	
 	override void EEKilled(Object killer)
 	{
 		super.EEKilled(killer);

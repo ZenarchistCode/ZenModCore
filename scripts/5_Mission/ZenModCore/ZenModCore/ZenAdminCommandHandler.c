@@ -16,6 +16,11 @@ class ZenAdminCommandHandler
 
 	bool HandleRawChatCommand(PlayerBase player, string msg)
 	{
+		if (g_Game.IsClient())
+		{
+			return HandleRawChatCommandClient(player, msg);
+		}
+		
 		if (!GetZenCoreConfig().ZenCore_AdminConfig.EnableCommands)
 			return false;
 		
@@ -32,21 +37,21 @@ class ZenAdminCommandHandler
 		cmd = cmd.Substring(1, cmd.Length() - 1);
 		t.Remove(0);
 		
-		ZMPrint("[ZenAdminCommandHandler] Received command: '" + cmd + "' from " + id);
+		ZMPrint("[ZenAdminCommandHandler] Received command: '" + msg + "' from " + id);
 		
 		if (!player)
 		{
 			return HandleCivilianCommand(null, id, cmd, t);
 		}
 
-		if (HandleAdminCommand(player, id, cmd, t))
+		if (player.IsZenAdmin() && HandleAdminCommand(player, id, cmd, t))
 		{
 			ZMLog("Admin", "commands", id + " executed admin command: " + msg);
 			ZenFunctions.SendPlayerMessage(player, "#STR_ZenCommandExecutedSuccessfully");
 			return true;
 		}
 		
-		if (HandleModeratorCommand(player, id, cmd, t))
+		if (GetZenCoreConfig().IsModerator(id) && HandleModeratorCommand(player, id, cmd, t))
 		{
 			ZMLog("Admin", "commands", id + " executed moderator command: " + msg);
 			ZenFunctions.SendPlayerMessage(player, "#STR_ZenCommandExecutedSuccessfully");
@@ -60,6 +65,11 @@ class ZenAdminCommandHandler
 		}
 
 		return true; // return true so that chat message gets stopped from relay to other players
+	}
+	
+	bool HandleRawChatCommandClient(PlayerBase player, string msg)
+	{
+		return false;
 	}
 	
 	bool HandleCivilianCommand(PlayerBase player, string uid, string cmd, array<string> params)
@@ -117,43 +127,78 @@ class ZenAdminCommandHandler
 		return false;
 	}
 	
+	ZenConfigBase GetConfigByName(string findCfgName)
+	{
+		foreach (typename typeNameKey, ZenConfigBase cfgBase : GetZenConfigRegister().GetConfigs())
+		{
+			if (!cfgBase)
+				continue;
+			
+			string cfgName = cfgBase.GetFileName();
+			cfgName.ToLower();
+			cfgName.Replace(".json", "");
+			
+			if (cfgName == findCfgName)
+			{
+				return cfgBase;
+			}
+		}
+		
+		return null;
+	}
+	
 	bool HandleAdminCommand(PlayerBase player, string uid, string cmd, array<string> params)
 	{
-		if (!GetZenCoreConfig().IsAdmin(uid))
-			return false;
-		
-		// Reload config 
-        if (cmd == "reload" && params.Count() > 0)
-        {
-            bool reload = false;
-			ZenConfigBase cfg = null;
-			string findCfgName = params.Get(0);
-			findCfgName.Replace(".json", "");
-
+		// Reload ALL configs
+		if (cmd == "reload" && params.Count() == 0)
+		{
+			int fileCount = 0;
+			int syncCount = 0;
+			
 			foreach (typename typeNameKey, ZenConfigBase cfgBase : GetZenConfigRegister().GetConfigs())
 			{
 				if (!cfgBase)
 					continue;
 				
-				string cfgName = cfgBase.GetFileName();
-				cfgName.ToLower();
-				cfgName.Replace(".json", "");
+				cfgBase.Load();
 				
-				if (cfgName == findCfgName)
+				if (cfgBase.ShouldSyncToClient())
 				{
-					cfg = cfgBase;
+					cfgBase.SyncToClient();
+					syncCount++;
 				}
+				
+				fileCount++;
 			}
 			
+			SendMsg(player, "Reloaded " + fileCount + " and resync'ed " + syncCount + " config files successfully");
+			return true;
+		}
+		
+		// Reload specific config 
+        if (cmd == "reload" && params.Count() > 0)
+        {
+            bool reload = false;
+			string findCfgName = params.Get(0);
+			findCfgName.Replace(".json", "");
+			
+			ZenConfigBase cfg = GetConfigByName(findCfgName);
+			if (!cfg)
+				cfg = GetConfigByName(findCfgName + "config");
+						
 			if (cfg)
 			{
 				cfg.Load();
-				cfg.SyncToClient();
-				SendMsg(player, "Reloaded " + cfgBase.GetFileName() + " config");
+				if (cfg.ShouldSyncToClient())
+				{
+					cfg.SyncToClient();
+				}
+				
+				SendMsg(player, "Reloaded " + cfg.GetFileName() + " config successfully");
 			}
             else
             {
-               SendMsg(player, "Couldn't find " + params.Get(0) + " config.");
+				SendMsg(player, "Failed! Couldn't find " + params.Get(0) + " config.");
             }
 
             return true;
@@ -175,10 +220,7 @@ class ZenAdminCommandHandler
 	}
 	
 	bool HandleModeratorCommand(PlayerBase player, string uid, string cmd, array<string> params)
-	{
-		if (!GetZenCoreConfig().IsModerator(uid))
-			return false;
-		
+	{		
 		if (cmd == "test")
 		{
 			ZenFunctions.DebugMessage("MODERATOR TEST PASSED!");

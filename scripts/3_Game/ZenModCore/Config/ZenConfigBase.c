@@ -80,6 +80,9 @@ class ZenConfigBase
 
 	[NonSerialized()]
 	static const int RPC_MAX_CHUNK_CHARS = 1000;
+	
+	[NonSerialized()]
+	static ref ScriptInvoker OnCfgChanged = new ScriptInvoker();
 
 	// -------------------------
 	// CONFIG SETTINGS
@@ -87,11 +90,13 @@ class ZenConfigBase
 	string GetRootFolder()       		
 	{ 
 		#ifdef SERVER
-		return ZenConstants.GetProfilesFolder(); 
+		return ZenConstants.GetProfilesFolder("Zenarchist"); 
 		#else 
-		return ZenConstants.GetClientProfilesFolder();
+		return ZenConstants.GetClientProfilesFolder("Zenarchist");
 		#endif
 	}
+	
+	
 	
 	string 			GetFolderName()       		{ return ""; } // "" = no subfolder
 	string 			GetFileName()         		{ return ClassName() + ".json"; }
@@ -131,6 +136,11 @@ class ZenConfigBase
 	}
 	
 	void OnRegistered() { Error("Not implemented! Set the global var ref here! Eg. g_MyConfigClass = this;"); }
+	
+	void NotifyChanged()
+	{
+		OnCfgChanged.Invoke(this);
+	}
 	
 	// -------------------------
 	// PATH
@@ -245,6 +255,7 @@ class ZenConfigBase
 
 		DoDebugPrint("LOAD");
 		AfterLoad();
+		NotifyChanged();
 	}
 
 	void Save(bool printLog = true)

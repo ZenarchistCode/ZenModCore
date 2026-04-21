@@ -116,13 +116,10 @@ modded class ItemBase
 	bool ShouldZenHologram()
 	{
 		#ifdef ZenModPack
-		if (!ZenModEnabled("ZenHologram"))
-		{
-			return false;
-		}
+		return ZenModEnabled("ZenHologram");
 		#endif
 		
-		return true;
+		return false;
 	}
 	
 	override void OnItemLocationChanged(EntityAI old_owner, EntityAI new_owner)

@@ -108,13 +108,15 @@ class ZenModSetting
 	int DefaultIndex;
 	int SavedIndex;
 	int PendingIndex;
+	int DisplayPriority;
 
-	void ZenModSetting(string id, string categoryId, string title, array<string> options, int defaultIndex = 0, string description = "")
+	void ZenModSetting(string id, string categoryId, string title, array<string> options, int defaultIndex = 0, string description = "", int displayPriority = 0)
 	{
 		Id = id;
 		CategoryId = categoryId;
 		Title = title;
 		Description = description;
+		DisplayPriority = displayPriority;
 
 		Options = new array<string>;
 		if (options)
@@ -311,19 +313,19 @@ class ZenOptions
 		Get().GetOrCreateCategory(categoryId, "#STR_ZenarchistCoreModPrefix " + displayName, description);
 	}
 
-	static ZenModSetting AddSetting(string categoryId, string key, string title, array<string> options, int defaultIndex = 0, string description = "")
+	static ZenModSetting AddSetting(string categoryId, string key, string title, array<string> options, int defaultIndex = 0, string description = "", int displayPriority = 0)
 	{
 		string fullId = BuildId(categoryId, key);
-		return Get().RegisterOrUpdateSetting(fullId, categoryId, title, options, defaultIndex, description);
+		return Get().RegisterOrUpdateSetting(fullId, categoryId, title, options, defaultIndex, description, displayPriority);
 	}
 
-	static ZenModSetting AddSetting2(string categoryId, string key, string title, string opt0, string opt1, int defaultIndex = 0, string description = "")
+	static ZenModSetting AddSetting2(string categoryId, string key, string title, string opt0, string opt1, int defaultIndex = 0, string description = "", int displayPriority = 0)
 	{
 		array<string> opts = { opt0, opt1 };
-		return AddSetting(categoryId, key, title, opts, defaultIndex, description);
+		return AddSetting(categoryId, key, title, opts, defaultIndex, description, displayPriority);
 	}
 
-	static ZenModSetting AddBoolSetting(string categoryId, string key, string title, bool defaultEnabled = false, string description = "", string offText = "#options_controls_disabled", string onText = "#options_controls_enabled")
+	static ZenModSetting AddBoolSetting(string categoryId, string key, string title, bool defaultEnabled = false, string description = "", string offText = "#options_controls_disabled", string onText = "#options_controls_enabled", int displayPriority = 0)
 	{
 		array<string> opts = { offText, onText };
 
@@ -333,7 +335,7 @@ class ZenOptions
 		else
 			defIndex = 0;
 
-		return AddSetting(categoryId, key, title, opts, defIndex, description);
+		return AddSetting(categoryId, key, title, opts, defIndex, description, displayPriority);
 	}
 
 	static string BuildId(string categoryId, string key)
@@ -502,7 +504,7 @@ class ZenOptions
 		return cat;
 	}
 
-	private ZenModSetting RegisterOrUpdateSetting(string fullId, string categoryId, string title, array<string> options, int defaultIndex, string description = "")
+	private ZenModSetting RegisterOrUpdateSetting(string fullId, string categoryId, string title, array<string> options, int defaultIndex, string description = "", int displayPriority = 0)
 	{
 		ZenOptionsCategory cat = GetOrCreateCategory(categoryId, "", "");
 		
@@ -518,7 +520,7 @@ class ZenOptions
 			return existing;
 		}
 	
-		ZenModSetting setting = new ZenModSetting(fullId, categoryId, title, options, defaultIndex, description);
+		ZenModSetting setting = new ZenModSetting(fullId, categoryId, title, options, defaultIndex, description, displayPriority);
 	
 		int loadedIdx;
 		if (m_LoadedValues.Find(fullId, loadedIdx))

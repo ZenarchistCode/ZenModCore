@@ -69,6 +69,12 @@ modded class MissionServer
 	{
 		GetZenConfigRegister().SyncToClient(identity);
 		
+		if (GetZenCoreConfig().IsAdmin(identity))
+		{
+			player.SetZenAdmin(true);
+			GetRPCManager().SendRPC("ZenMod_RPC", "RPC_ReceiveZenCoreAdminStatusOnClient", new Param1<bool>(true), true, identity);
+		}
+		
 		if (!GetZenCoreConfig().ZenCore_DiscordConfig.EnableDiscord)
 			return;
 		

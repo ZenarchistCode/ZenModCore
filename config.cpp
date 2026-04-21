@@ -1,5 +1,5 @@
 /*
-	(c) 2025 | ZenModCore | Zenarchist
+	(c) 2026 | ZenModCore | Zenarchist
 */
 
 class CfgPatches

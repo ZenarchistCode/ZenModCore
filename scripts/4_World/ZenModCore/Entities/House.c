@@ -33,12 +33,9 @@ modded class House
 	bool ShouldZenHologram()
 	{
 		#ifdef ZenModPack
-		if (!ZenModEnabled("ZenHologram"))
-		{
-			return false;
-		}
+		return ZenModEnabled("ZenHologram");
 		#endif
 		
-		return true;
+		return false;
 	}
 }

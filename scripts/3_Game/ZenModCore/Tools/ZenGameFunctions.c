@@ -215,6 +215,23 @@ class ZenGameFunctions
 	
 		return obj;
 	}
+	
+	//! Aligns given object to underlying terrain
+	static void AlignToTerrain(Object obj)
+	{
+		vector transform[4];
+		obj.GetTransform(transform);
+		vector ground_position, ground_dir; 
+		int component;
+		DayZPhysics.RaycastRV(transform[3], transform[3] + transform[1] * -1000, ground_position, ground_dir, component, null, null, null, false, true);
+		vector surface_normal = g_Game.SurfaceGetNormal(ground_position[0], ground_position[2]);
+		vector local_ori = obj.GetDirection();
+		transform[0] = surface_normal * local_ori;
+		transform[1] = surface_normal;
+		transform[2] = surface_normal * (local_ori * vector.Up);
+		obj.SetTransform(transform);
+		obj.Update();
+	}
 
 	private static bool HAS_PRINTED_MODS;
 	static void PrintMods() 
@@ -675,42 +692,6 @@ class ZenGameFunctions
 	
 	// Random constants we don't need to worry about editing or checking ever
 	private static const string SESSION_COUNT_FILE = ZenConstants.GetDbFolder() + "zen_session_count.bin";
-	
-	protected static ref map<string, int> m_ZenSurfacePidCache = new map<string, int>();
-
-	static int GetSurfaceParticleType(vector worldPos)
-	{
-	    string surf;
-	    g_Game.SurfaceGetType(worldPos[0], worldPos[2], surf);
-	    surf.ToLower();
-	
-	    int pid;
-	    if (m_ZenSurfacePidCache.Find(surf, pid))
-	        return pid;
-	
-	    // Heuristics: adjust/add as you like
-	    if (surf.Contains("snow"))       
-			pid = ParticleList.IMPACT_SNOW_ENTER;
-	    else if (surf.Contains("ice"))   
-			pid = ParticleList.IMPACT_ICE_ENTER;
-	    else if (surf.Contains("sand"))  
-			pid = ParticleList.IMPACT_SAND_ENTER;
-	    else if (surf.Contains("gravel"))
-			pid = ParticleList.IMPACT_GRAVEL_ENTER;
-	    else if (surf.Contains("asphalt") || surf.Contains("road"))  
-			pid = ParticleList.IMPACT_CONCRETE_ENTER;
-	    else if (surf.Contains("grass") || surf.Contains("meadow"))
-			pid = ParticleList.IMPACT_GRASS_ENTER;
-	    else if (surf.Contains("forest") || surf.Contains("soil") || surf.Contains("dirt") || surf.Contains("mud"))   
-			pid = ParticleList.IMPACT_DIRT_ENTER;
-	    else if (surf.Contains("foliage") || surf.Contains("leaf"))  
-			pid = ParticleList.IMPACT_FOLIAGE_ENTER;
-	    else                             
-			pid = ParticleList.IMPACT_DISTANT_DUST;
-	
-	    m_ZenSurfacePidCache.Insert(surf, pid);
-	    return pid;
-	}
 }
 
 // Only use this for printlogs where the timestamp matters for debugging.

@@ -63,7 +63,7 @@ FrameWidgetClass zen_mod_setting_container {
 	 {
 	  TextWidgetClass zen_mod_setting_value
 	  {
-	   ignorepointer 1
+	   ignorepointer 0
 	   position 0 0
 	   size 1 1
 	   hexactpos 1

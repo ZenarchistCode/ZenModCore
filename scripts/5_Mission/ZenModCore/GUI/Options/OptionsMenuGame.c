@@ -46,8 +46,10 @@ modded class OptionsMenuGame
 
 			if (cat.Settings.Count() == 0)
 				continue;
+			
+			ZenOptionsUIUtils.SortSettingsByDisplayPriority(cat.Settings);
 
-			Widget section = GetGame().GetWorkspace().CreateWidgets(LAYOUT_SECTION, gameSettingsRoot);
+			Widget section = g_Game.GetWorkspace().CreateWidgets(LAYOUT_SECTION, gameSettingsRoot);
 			if (!section)
 				continue;
 
@@ -79,7 +81,7 @@ modded class OptionsMenuGame
 			}
 		}
 
-		GetGame().GetCallQueue(CALL_CATEGORY_GUI).CallLater(ZenUpdateScrollbarVisibility, 1, false);
+		g_Game.GetCallQueue(CALL_CATEGORY_GUI).CallLater(ZenUpdateScrollbarVisibility, 1, false);
 	}
 	
 	protected void ZenUpdateScrollbarVisibility()

@@ -53,7 +53,7 @@ class ZenConfigRegister
 			return;
 		}
 		
-		ZMPrint("[ZenModCore] Registering ZenConfigRegister RPCs.");
+		ZMPrint("[ZenModCore::ZenConfigRegister] Registering ZenConfigRegister RPCs.");
 		GetRPCManager().AddRPC(ZEN_RPC, RPC_CLIENT_RECEIVE, this, SingleplayerExecutionType.Both);
 		GetRPCManager().AddRPC(ZEN_RPC, RPC_SERVER_RECEIVE_SYNC_REQUEST, this, SingleplayerExecutionType.Both);
 		GetRPCManager().AddRPC(ZEN_RPC, RPC_CLIENT_RECEIVE_CHUNK, this, SingleplayerExecutionType.Both);
@@ -111,21 +111,21 @@ class ZenConfigRegister
 		ZenConfigBase cfg = ZenConfigBase.Cast(type.Spawn());
 		if (!cfg)
 		{
-			ErrorEx("[ZenConfigRegister] Failed to Spawn() config type: " + type.ToString());
+			ErrorEx("[ZenModCore::ZenConfigRegister] Failed to Spawn() config type: " + type.ToString());
 			return null;
 		}
 	
 		#ifdef SERVER
 		if (cfg.IsClientOnlyConfig())
 		{
-			ZMPrint("[ZenConfigRegister] Deleting client-side only config on server: " + cfg.ClassName());
+			ZMPrint("[ZenModCore::ZenConfigRegister] Deleting client-side only config on server: " + cfg.ClassName());
 			delete cfg;
 			return null;
 		}
 		#else
 		if (cfg.IsServerOnlyConfig())
 		{
-			ZMPrint("[ZenConfigRegister] Deleting server-side only config on client: " + cfg.ClassName());
+			ZMPrint("[ZenModCore::ZenConfigRegister] Deleting server-side only config on client: " + cfg.ClassName());
 			delete cfg;
 			return null;
 		}
@@ -144,21 +144,17 @@ class ZenConfigRegister
 	
 	bool UnregisterConfig(ZenConfigBase cfg)
 	{
-		bool removedCfg = false;
-		
-		if (cfg && m_Configs.Contains(cfg.Type()))
-		{
-			string cfgName = cfg.ClassName();
-			m_Configs.Remove(cfg.Type());
-			m_TypesByName.Remove(cfg.Type().ToString());
-			m_AllTypes.RemoveItem(cfg.Type());
-			removedCfg = true;
-		}
-		
-		if (removedCfg)
-			ZMPrint("[ZenConfigRegister] Unregistered " + cfgName);
-		
-		return removedCfg;
+		ZenConfigBase existing;
+	    if (!cfg || !m_Configs.Find(cfg.Type(), existing) || existing != cfg)
+	        return false;
+	
+	    string cfgName = cfg.ClassName();
+	    m_Configs.Remove(cfg.Type());
+	    m_TypesByName.Remove(cfg.Type().ToString());
+	    m_AllTypes.RemoveItem(cfg.Type());
+	
+	    ZMPrint("[ZenModCore::ZenConfigRegister] Unregistered " + cfgName);
+	    return true;
 	}
 	
 	void RequestConfigIfOutdated(typename t)
@@ -189,7 +185,7 @@ class ZenConfigRegister
 		typename t;
 		if (!m_TypesByName.Find(typeName, t))
 		{
-			ErrorEx("[ZenConfig] Unknown config type: " + typeName);
+			ErrorEx("[ZenModCore::ZenConfigRegister] Unknown config type: " + typeName);
 			return;
 		}
 	
@@ -202,7 +198,7 @@ class ZenConfigRegister
 		if (clientVer != serverVer)
 		{
 			cfg.SyncToClient(sender);
-			Print("[ZenConfig] " + typeName + " mismatch client=" + clientVer + " server=" + serverVer + " -> sent update to " + sender.GetId());
+			ZMPrint("[ZenModCore::ZenConfigRegister] " + typeName + " mismatch client=" + clientVer + " server=" + serverVer + " -> sent update to " + sender.GetId());
 		}
 	}
 
@@ -247,7 +243,7 @@ class ZenConfigRegister
 			}
 		}
 		
-		Print("[ZenConfigRegister] Sent " + cfgCount + " config files to id=" + identity.GetId());
+		ZMPrint("[ZenModCore::ZenConfigRegister] Sent " + cfgCount + " config files to id=" + identity.GetId());
 	}
 	
 	private void ApplyPayloadToConfig(string typeName, string payload)
@@ -258,7 +254,7 @@ class ZenConfigRegister
 			// We don't know this typename yet (getter not called / type not registered).
 			// Cache it and apply later when RegisterType() is called.
 			m_PendingPayloads.Set(typeName, payload);
-			Error("[ZenConfig] Type not registered yet, caching payload: " + typeName);
+			ZMPrint("[ZenModCore::ZenConfigRegister] Type not registered yet, caching payload: " + typeName);
 			return;
 		}
 	
@@ -268,7 +264,7 @@ class ZenConfigRegister
 			cfg = ZenConfigBase.Cast(t.Spawn());
 			if (!cfg)
 			{
-				Error("[ZenConfig] Failed to create config: " + t.ToString());
+				Error("[ZenModCore::ZenConfigRegister] Failed to create config: " + t.ToString());
 				return;
 			}
 	
@@ -298,13 +294,13 @@ class ZenConfigRegister
 		string err;
 		if (!cfg.ApplySyncPayload(payload, err))
 		{
-			Error("[ZenConfig] ApplySyncPayload failed for " + typeName + ": " + err);
+			Error("[ZenModCore::ZenConfigRegister] ApplySyncPayload failed for " + typeName + ": " + err);
 			return;
 		}
 	
 		string className = cfg.ClassName();
 		
-		ZMPrint("[" + className + "] Received config from server.");
+		ZMPrint("[ZenModCore::ZenConfigRegister] " + className + ": received config from server.");
 		
 		m_HasReceivedServerSync.Set(className, true);
 		cfg.AfterConfigReceived();
@@ -325,7 +321,7 @@ class ZenConfigRegister
 		Param2<string, string> msg;
 		if (!ctx.Read(msg))
 		{
-			Error("[ZenConfig] RPC_ReceiveConfigOnClient: ctx.Read failed");
+			Error("[ZenModCore::ZenConfigRegister] RPC_ReceiveConfigOnClient: ctx.Read failed");
 			return;
 		}
 	
@@ -340,7 +336,7 @@ class ZenConfigRegister
 		Param4<string, int, int, string> msg;
 		if (!ctx.Read(msg))
 		{
-			Error("[ZenConfig] RPC_ReceiveConfigChunkOnClient: ctx.Read failed");
+			Error("[ZenModCore::ZenConfigRegister] RPC_ReceiveConfigChunkOnClient: ctx.Read failed");
 			return;
 		}
 	

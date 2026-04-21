@@ -8,6 +8,9 @@ modded class MissionBase
 	void MissionBase()
 	{
 		ZMPrint("[ZenModCore] MissionBase()");
+		
+		GetRPCManager().AddRPC("ZenMod_RPC", "RPC_ReceiveZenCoreAdminStatusOnClient", this, SingeplayerExecutionType.Both);
+		
 		ZenGameFunctions.PrintMods();
 	}
 
@@ -98,6 +101,25 @@ modded class MissionBase
 	void AfterLoadZenConfig()
 	{
 	}
+	
+	void RPC_ReceiveZenCoreAdminStatusOnClient(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
+    {
+	    Param1<bool> data;
+	
+	    // If data fails to read, stop here.
+	    if (!ctx.Read(data))
+	    {
+	        Error("IMPORTANT ERROR: ZenModCore::MissionBase - admin status failed to be read on client!");
+	        return;
+	    }
+	
+	    // Get client player and set admin authority from server
+	    PlayerBase player = PlayerBase.Cast(g_Game.GetPlayer());
+	    if (player)
+		{
+	        player.SetZenAdmin(data.param1);
+		}
+    }
 	
 	protected void OnZenMissionFinish()
 	{
