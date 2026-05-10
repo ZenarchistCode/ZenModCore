@@ -96,10 +96,14 @@ class ZenConfigBase
 		#endif
 	}
 	
-	
+	string GetFileName()         		
+	{
+		string className = ClassName();
+		string rootFolder = GetRootFolder();
+		return className + ".json"; 
+	}
 	
 	string 			GetFolderName()       		{ return ""; } // "" = no subfolder
-	string 			GetFileName()         		{ return ClassName() + ".json"; }
 	string    		GetCurrentVersion()   		{ return "1.29.1"; }
 	string 			GetSyncVersion() 			{ return GetCurrentVersion(); }
 	bool 			ShouldLoadConfig()			{ return true; }
@@ -120,8 +124,8 @@ class ZenConfigBase
 
 	void ZenConfigBase()
 	{
-		if (ShouldDebugPrint())
-			ZMPrint("[ZenConfig] Created: " + ClassName());
+		//if (ShouldDebugPrint())
+		//	ZMPrint("[ZenConfig] Created: " + ClassName());
 	}
 	
 	void ~ZenConfigBase()

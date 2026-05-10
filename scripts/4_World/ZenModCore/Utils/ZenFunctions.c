@@ -483,45 +483,7 @@ class ZenFunctions: ZenGameFunctions
 
 		return aimedObjects;
 	}
-
-	//! Enable/disable player controls - WARNING: This function does not check if controls should be enabled given what the player is doing at the time when it's called, so use carefully and thoughtfully
-	static void SetPlayerControl(bool isEnabled = true, bool hideHud = false)
-	{
-		if (!g_Game)
-			return;
-
-		if (!g_Game.GetMission())
-			return;
-			
-		if (!g_Game.IsClient())
-			return;
-
-		if (!isEnabled)
-		{
-			g_Game.GetMission().AddActiveInputExcludes({"menu"});
-
-			if (hideHud)
-				g_Game.GetMission().GetHud().Show(false);
-		}
-		else
-		{
-			g_Game.GetMission().RemoveActiveInputExcludes({"menu"});
-
-			if (hideHud)
-				g_Game.GetMission().GetHud().Show(true);
-		}
-	}
-
-	static void EnablePlayerControl()
-	{
-		SetPlayerControl(true, false);
-	}
-
-	static void DisablePlayerControl()
-	{
-		SetPlayerControl(false, false);
-	}
-
+	
 	static PlayerBase GetPlayerByIdentity(PlayerIdentity id)
 	{
 		return GetPlayerByID(id.GetId());

@@ -14,7 +14,27 @@ class ZenObjectHookSpawner
 	void Init()
 	{
 		ZMPrint("[ZenObjectHookSpawner] Init.");
+		
+		// Hook onto configs after they load 
 		ZenObjectHookConfigBase.AfterHookLoaded.Insert(OnHookConfigLoaded);
+		
+		// Load any configs which have already loaded before the scripthook above was registered
+		LoadAlreadyRegisteredHookConfigs();
+	}
+	
+	void LoadAlreadyRegisteredHookConfigs()
+	{
+		map<typename, ref ZenConfigBase> configs = GetZenConfigRegister().GetConfigs();
+	
+		foreach (typename configType, ZenConfigBase baseConfig : configs)
+		{
+			ZenObjectHookConfigBase hookConfig = ZenObjectHookConfigBase.Cast(baseConfig);
+	
+			if (!hookConfig)
+				continue;
+	
+			OnHookConfigLoaded(hookConfig);
+		}
 	}
 	
 	void SpawnOrDump()
@@ -281,7 +301,10 @@ class ZenObjectHookSpawner
 	
 	Object CreateObject(Object parentObj, ZenObjectHookDef def)
 	{
-		if (!parentObj)
+		if (!parentObj || !def)
+			return null;
+		
+		if (def.SpawnObjectType == "")
 			return null;
 		
 		Object newObj = ZenGameFunctions.SpawnObjectRelative(
@@ -293,7 +316,7 @@ class ZenObjectHookSpawner
 		
 		if (!newObj)
 		{
-			Error("Failed to spawn object type: " + def.SpawnObjectType);
+			ZMPrint("[ZenObjectHookSpawner::Error] Failed to spawn object type: " + def.SpawnObjectType);
 			return null;
 		}
 		
@@ -351,8 +374,12 @@ class ZenObjectHookSpawner
 		// IMPORTANT: export the *spawned* object's transform, not the parent’s:
 		vector spawnPos = parentPos + def.OffsetPosition;
 		vector spawnOri = parentOri + def.OffsetOrientation; // (Yaw,Pitch,Roll)
+		
+		string objType = def.SpawnObjectType;
+		if (objType == "")
+			objType = parentClassName;
 
-		string line = ZenMapGroupPosMath.BuildGroupLine(def.SpawnObjectType, spawnPos, spawnOri);
+		string line = ZenMapGroupPosMath.BuildGroupLine(objType, spawnPos, spawnOri);
 		ZenMapGroupPosWriter.Append(line);
 	}
 	

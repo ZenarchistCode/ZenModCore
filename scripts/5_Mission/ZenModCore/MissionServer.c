@@ -1,24 +1,32 @@
-// This class code only executes on the server.
 modded class MissionServer 
 {
 	private static int ZEN_LAST_DB_SAVE;
-	
-	void ~MissionServer()
-	{
-		OnZenMissionFinish();
-	}
 	
 	void MissionServer()
 	{
 		GetZenObjectHookSpawner().Init();
 		ZEN_LAST_DB_SAVE = g_Game.GetTime();
 	}
-	
+
 	override void OnMissionStart()
 	{
 		super.OnMissionStart();
 		
+		if (g_Game != null && ZenConstants.SERVER_INSTANCE_ID == -1)
+		{
+			ZenConstants.SERVER_INSTANCE_ID = g_Game.ServerConfigGetInt("instanceId");
+		}
+		
 		ZMPrint("[ZenModCore] OnMissionStart.");
+	}
+	
+	override void OnMissionFinish()
+	{
+		super.OnMissionFinish();
+		
+		ZMPrint("[ZenModCore] OnMissionFinish.");
+		
+		OnZenMissionFinish();
 	}
 	
 	override void OnZenInit()

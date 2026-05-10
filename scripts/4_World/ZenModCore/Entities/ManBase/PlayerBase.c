@@ -18,6 +18,35 @@ modded class PlayerBase
 		return m_ZenCore_IsAdmin;
 	}
 	
+	override void OnPlayerLoaded()
+	{
+		super.OnPlayerLoaded();
+
+		if (g_Game.IsClient() && IsControlledPlayer())
+		{
+			Zen_OnPlayerLoadedClientPlayer();
+		}
+	}
+	
+	override void OnDisconnect()
+	{
+		super.OnDisconnect();
+		
+		if (g_Game.IsClient() && IsControlledPlayer())
+		{
+			Zen_OnDisconnectClientPlayer();
+		}
+	}
+	
+	void Zen_OnPlayerLoadedClientPlayer() 
+	{
+		GetZenConfigRegister().RequestAllOutdatedConfigs();
+	}
+	
+	void Zen_OnDisconnectClientPlayer() 
+	{
+	}
+	
 	override void EEKilled(Object killer)
 	{
 		super.EEKilled(killer);

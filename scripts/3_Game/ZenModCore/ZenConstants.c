@@ -1,5 +1,7 @@
 class ZenConstants
 {
+	static int SERVER_INSTANCE_ID = -1;
+	
 	static string GetProfilesFolder(string modName = "Zenarchist", string extraFolders = "")
 	{
 		return "$profile:" + modName + "\\" + extraFolders;
@@ -16,11 +18,17 @@ class ZenConstants
 	
 	static string GetDbFolder(string modName = "Zenarchist", string extraFolders = "")
 	{
-		string folderPath = "$mission:storage_%1\\" + modName + "\\";
 		if (!g_Game)
-			return string.Format(folderPath, "1") + extraFolders;
+		{
+			return "ZENARCHIST_ERROR";
+		}
 		
-		return string.Format(folderPath, g_Game.ServerConfigGetInt("instanceId")) + extraFolders;
+		string folderPath = "$mission:storage_%1\\" + modName + "\\";
+		
+		if (SERVER_INSTANCE_ID == -1)
+			SERVER_INSTANCE_ID = g_Game.ServerConfigGetInt("instanceId");
+		
+		return string.Format(folderPath, SERVER_INSTANCE_ID) + extraFolders;
 	}
 	
 	static string GetLogFolder(string extraFolders = "")

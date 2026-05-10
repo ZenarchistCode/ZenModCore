@@ -132,12 +132,12 @@ class ZenConfigRegister
 		#endif
 	
 		cfg.SetDefaults();
-		cfg.Load();
 	
 		m_Configs.Insert(type, cfg);
 	
 		// Bind globals / static instance pointers here
 		cfg.OnRegistered();
+		cfg.Load();
 	
 		return cfg;
 	}
@@ -157,6 +157,17 @@ class ZenConfigRegister
 	    return true;
 	}
 	
+	void RequestAllOutdatedConfigs()
+	{
+		foreach (typename tname, ZenConfigBase cfg : m_Configs)
+		{
+			if (cfg && cfg.GetSyncVersion() != cfg.GetCurrentVersion())
+			{
+				RequestConfigIfOutdated(tname);
+			}
+		}
+	}
+	
 	void RequestConfigIfOutdated(typename t)
 	{
 		if (!g_Game || !g_Game.IsClient())
@@ -168,6 +179,7 @@ class ZenConfigRegister
 	
 		// Send (typeName, clientSyncVersion) to server
 		GetRPCManager().SendRPC(ZEN_RPC, RPC_SERVER_RECEIVE_SYNC_REQUEST, new Param2<string, string>(t.ToString(), cfg.GetSyncVersion()), true, null);
+		ZMPrint("[ZenConfigRegister::SyncCheck] [" + cfg.ClassName() + "] Sending sync version to server for cross-check: " + cfg.GetSyncVersion());
 	}
 	
 	void RPC_RequestConfigIfOutdated(CallType type, ParamsReadContext ctx, PlayerIdentity sender, Object target)
@@ -185,7 +197,7 @@ class ZenConfigRegister
 		typename t;
 		if (!m_TypesByName.Find(typeName, t))
 		{
-			ErrorEx("[ZenModCore::ZenConfigRegister] Unknown config type: " + typeName);
+			ErrorEx("[ZenConfigRegister] Unknown config type: " + typeName);
 			return;
 		}
 	
@@ -198,7 +210,11 @@ class ZenConfigRegister
 		if (clientVer != serverVer)
 		{
 			cfg.SyncToClient(sender);
-			ZMPrint("[ZenModCore::ZenConfigRegister] " + typeName + " mismatch client=" + clientVer + " server=" + serverVer + " -> sent update to " + sender.GetId());
+			ZMPrint("[ZenConfigRegister::SyncCheck] " + typeName + " mismatch client=" + clientVer + " server=" + serverVer + " -> sent update to player " + sender.GetId());
+		}
+		else 
+		{
+			ZMPrint("[ZenConfigRegister::SyncCheck] " + typeName + " match client=" + clientVer + " server=" + serverVer + " for player " + sender.GetId());
 		}
 	}
 

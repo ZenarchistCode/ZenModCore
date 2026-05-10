@@ -160,7 +160,7 @@ class ZenTestConfig : ZenConfigBase
 	// -------------------------
 	override bool BuildSyncPayload(out string payload, out string err)
 	{
-		ZenTestConfig_SyncPayload snap = new ZenTestConfig_SyncPayload;
+		ZenTestConfig_SyncPayload snap = new ZenTestConfig_SyncPayload();
 
 		// Copy into payload (so you never accidentally mutate your config during serialization)
 		if (TestMap)
@@ -183,7 +183,7 @@ class ZenTestConfig : ZenConfigBase
 			TestMap = new map<string, ref ZenTestClass>;
 		}
 
-		ZenTestConfig_SyncPayload snap = new ZenTestConfig_SyncPayload;
+		ZenTestConfig_SyncPayload snap = new ZenTestConfig_SyncPayload();
 		if (!JsonFileLoader<ZenTestConfig_SyncPayload>.LoadData(payload, snap, err))
 		{
 			return false;

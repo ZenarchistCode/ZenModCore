@@ -2,6 +2,7 @@ class ZenGameFunctions
 {
 	static bool HasInit;
 	static int ServerSessionCount = -1;
+	static bool IsFreshWipe = false;
 	
 	static void Init()
 	{
@@ -22,10 +23,10 @@ class ZenGameFunctions
 		int count = 0;
 
 		// If we already have a stored count, load it and increment for this new boot
-		if (FileExist(SESSION_COUNT_FILE))
+		if (FileExist(GetSessionCountFile()))
 		{
 			FileSerializer r = new FileSerializer();
-			if (r.Open(SESSION_COUNT_FILE, FileMode.READ))
+			if (r.Open(GetSessionCountFile(), FileMode.READ))
 			{
 				// File contains exactly 1 int
 				r.Read(count);
@@ -33,18 +34,21 @@ class ZenGameFunctions
 			}
 
 			count = count + 1;
+			ZMPrint("[ZenModCore] Server session count: " + count);
 		}
 		else
 		{
 			// First ever boot after wipe (or file removed) => session 0
 			count = 0;
+			ZMPrint("[ZenModCore] ********** FRESH WIPE DETECTED! **********");
+			IsFreshWipe = true;
 		}
 
 		ServerSessionCount = count;
 
 		// Persist (create or overwrite)
 		FileSerializer w = new FileSerializer();
-		if (w.Open(SESSION_COUNT_FILE, FileMode.WRITE))
+		if (w.Open(GetSessionCountFile(), FileMode.WRITE))
 		{
 			w.Write(count);
 			w.Close();
@@ -58,7 +62,7 @@ class ZenGameFunctions
 			Error("Called IsFreshWipe() before server has initialized properly!");
 		}
 		
-		return ServerSessionCount == 0;
+		return !FileExist(GetSessionCountFile()) || IsFreshWipe;
 	}
 	
 	static bool IsWinter(bool countLateOrEarlyWinter = true)
@@ -127,27 +131,41 @@ class ZenGameFunctions
 		return month == 1 && day >= 25 && day <= 27;
 	}
 	
-	static Object SpawnObject(string type, vector position, vector orientation = "0 0 0", float scale = 1.0, int flags = ECE_SETUP, bool allowDuplicate = true)
+	static Object SpawnObject(string type, vector position, vector orientation = "0 0 0", float scale = 1.0, bool replace = true, bool useScale = false, bool noPersistency = false)
 	{
-		if (!allowDuplicate)
+	    // Overwrite scale to 1.0
+	    if (!useScale)
+	        scale = 1.0;
+		
+		// Get objects within 1 meter of the spawn
+	    array<Object> objectsNearby = new array<Object>;
+	    g_Game.GetObjectsAtPosition3D(position, 0.1, objectsNearby, null);
+		
+		// Delete any existing objects
+	    foreach(Object z_obj : objectsNearby)
+	    {
+	        if (z_obj.GetType() == type && z_obj.GetPosition() == position && z_obj.GetOrientation() == orientation)
+	        {
+	            //if (!replace)
+	            //    return NULL;
+	            
+	            g_Game.ObjectDelete(z_obj);
+				Error("DUPLICATE OBJECT FOUND SPAWNED BY INIT.C @ " + position + " - " + type);
+	        }
+	    }
+		
+		Object obj;
+	    if (type.Contains(".p3d")) 
 		{
-			// Get objects within 0.1 meter of the spawn
-		    array<Object> objectsNearby = new array<Object>;
-		    g_Game.GetObjectsAtPosition3D(position, 0.1, objectsNearby, null);
-			
-			// Delete any existing objects
-		    foreach (Object z_obj : objectsNearby)
-		    {
-		        if (z_obj.GetType() == type && z_obj.GetPosition() == position && z_obj.GetOrientation() == orientation)
-		        {
-		            g_Game.ObjectDelete(z_obj);
-					Error("DUPLICATE OBJECT FOUND @ " + position + " - " + type);
-					return z_obj;
-		        }
-		    }
-		}
+	        obj = g_Game.CreateStaticObjectUsingP3D(type, position, orientation, scale, g_Game.IsClient());
+	    } else 
+		{
+			if (noPersistency)
+				obj = g_Game.CreateObjectEx(type, position, ECE_SETUP | ECE_CREATEPHYSICS | ECE_NOLIFETIME | ECE_NOPERSISTENCY_WORLD | ECE_NOPERSISTENCY_CHAR);
+			else 
+				obj = g_Game.CreateObjectEx(type, position, ECE_SETUP | ECE_CREATEPHYSICS);
+	    }
 	    
-		Object obj = g_Game.CreateObjectEx(type, position, flags, RF_IGNORE);
 	    if (!obj) 
 	    {
 	        Error("Failed to create object " + type);
@@ -156,6 +174,7 @@ class ZenGameFunctions
 	
 	    obj.SetPosition(position);
 	    obj.SetOrientation(orientation);
+	    obj.SetOrientation(obj.GetOrientation());
 	    obj.SetScale(scale);
 	    obj.Update();
 	    obj.SetAffectPathgraph(true, false);
@@ -259,10 +278,7 @@ class ZenGameFunctions
 	{
 		if (folderPath == "")
 			return;
-		
-		if (folderPath.Contains("storage_"))
-			folderPath.ToLower();
-	
+
 		// Normalize separators
 		folderPath.Replace("/", "\\");
 	
@@ -690,8 +706,88 @@ class ZenGameFunctions
 		return m_WorldCenterPosition;
 	}
 	
-	// Random constants we don't need to worry about editing or checking ever
-	private static const string SESSION_COUNT_FILE = ZenConstants.GetDbFolder() + "zen_session_count.bin";
+	static string GetSessionCountFile()
+	{
+		return ZenConstants.GetDbFolder() + "zen_session_count.bin";
+	}
+	
+	static string GetDistanceString(float total_distance, bool meters_only = false)
+	{
+		if (total_distance > 0)
+		{
+			string distanceString;
+			
+			float kilometers = total_distance * 0.001;
+			kilometers = Math.Round(kilometers);
+			if ( kilometers >= 10 && !meters_only )
+			{
+				distanceString = GetValueString(kilometers, true) + " #STR_distance_unit_abbrev_kilometer_0";
+			}
+			else
+			{
+				distanceString = GetValueString(total_distance) + " #STR_distance_unit_abbrev_meter_0";
+			}
+			
+			return distanceString;
+		}	
+	
+		return "0" + " #STR_distance_unit_abbrev_meter_0";
+	}
+	
+	static string GetValueString(float total_value, bool show_decimals = false)
+	{
+		if (total_value > 0)
+		{
+			string out_string;
+			
+			int total_value_int = total_value;
+			string number_str = total_value_int.ToString();
+			
+			//number
+			if ( total_value >= 1000 )
+			{
+				int count;		
+				int first_length = number_str.Length() % 3;		//calculate position of the first separator
+				if ( first_length > 0 )
+				{
+					count = 3 - first_length;
+				}
+				
+				for ( int i = 0; i < number_str.Length(); ++i )
+				{
+					out_string += number_str.Get( i );
+					count ++;
+					
+					if ( count >= 3 )
+					{
+						out_string += " ";						//separator
+						count = 0;
+					}
+				}
+			}
+			else
+			{
+				out_string = number_str;
+			}
+			
+			//decimals
+			if ( show_decimals )
+			{
+				string total_value_str = total_value.ToString();
+				int decimal_idx = total_value_str.IndexOf( "." );
+			
+				if ( decimal_idx > -1 )
+				{
+					out_string.TrimInPlace();
+					out_string += total_value_str.Substring( decimal_idx, total_value_str.Length() - decimal_idx );
+				}
+			}
+
+			return out_string;
+		}
+		
+		return "0";
+	}
 }
 
 // Only use this for printlogs where the timestamp matters for debugging.
@@ -709,6 +805,35 @@ static void ZMPrint(string s)
 static void ZMLog(string subFolder, string fileName, string text, bool perDay = true)
 {
 	ZenLogger.Log(subFolder, fileName, text, perDay);
+}
+
+// 24HR TIMESTAMP
+static string ZMGetTimestamp(bool includeSeconds = true, bool includeAmPm = true)
+{
+	int hour, minute, second;
+
+	GetHourMinuteSecond(hour, minute, second);
+	
+	string timestamp = hour.ToStringLen(2) + ":" + minute.ToStringLen(2);
+	
+	if (includeSeconds)
+	{
+		timestamp = timestamp + ":" + second.ToStringLen(2);
+	}
+	
+	if (includeAmPm)
+	{
+		if (hour >= 0 && hour <= 11)
+		{
+			timestamp = timestamp + "AM";
+		}
+		else 
+		{
+			timestamp = timestamp + "PM";
+		}
+	}
+
+	return timestamp;
 }
 
 // YYYY-MM-DD-TIME
