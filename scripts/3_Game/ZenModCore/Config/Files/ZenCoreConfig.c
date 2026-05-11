@@ -214,8 +214,8 @@ class ZenAdminConfig
 {
 	bool EnableCommands;
 	string CommandPrefix;
-	ref array<string> AdminIDs;
-	ref array<string> ModeratorIDs;
+	ref array<string> AdminIDs; // BohemiaID
+	ref array<string> ModeratorIDs; // BohemiaID
 	ref map<string, string> CommandURLs;
 
 	void ZenAdminConfig()

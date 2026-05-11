@@ -175,9 +175,13 @@ modded class ItemBase
 		auto ctx = storage["ZenModCore"];
 		if (!ctx) return;
 		
+		// Storage Version 1
 		ctx.Write(m_ZenHasDoneFirstInit);
 		ctx.Write(m_ZenFirstTouchedTimestamp);
 		ctx.Write(m_ZenCreationTimestamp);
+
+		// Storage Version 2
+		ctx.Write(m_ZenWasCECreated);
 	}
 
 	override bool CF_OnStoreLoad(CF_ModStorageMap storage)
@@ -192,6 +196,11 @@ modded class ItemBase
 			if (!ctx.Read(m_ZenHasDoneFirstInit)) return false;
 			if (!ctx.Read(m_ZenFirstTouchedTimestamp)) return false;
 			if (!ctx.Read(m_ZenCreationTimestamp)) return false;
+		}
+
+		if (ctx.GetVersion() >= 2)
+		{
+			if (!ctx.Read(m_ZenWasCECreated)) return false;
 		}
 
 		return true;

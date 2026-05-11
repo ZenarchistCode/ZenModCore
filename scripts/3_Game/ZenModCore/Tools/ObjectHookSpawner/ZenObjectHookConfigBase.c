@@ -58,6 +58,9 @@ class ZenObjectHookConfigBase: ZenConfigBase
 	{
 		super.AfterLoad();
 		
+		if (g_Game.IsClient())
+			return;
+		
 		// GetDB() will always create the DB file it doesn't exist - so we need to check if the dumpedpos map is blank to detect fresh wipe.
 		// NOTE: If a mod does not detect ANY dumped positions this will cause the server to re-check on every startup: so make sure any target objects truly exist!
 		if (!SpawnMapGroupPosXML && !GetDB().DumpedPositions || GetDB().DumpedPositions.Count() == 0)

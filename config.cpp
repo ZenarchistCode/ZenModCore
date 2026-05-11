@@ -22,7 +22,7 @@ class CfgMods
 		author = "Zenarchist";
 		type = "mod";
 		version = "1.0";
-		storageVersion = 1; // CF storage
+		storageVersion = 2; // CF storage
 		defines[]=
 		{
 			//"ZenModCoreDebug"
