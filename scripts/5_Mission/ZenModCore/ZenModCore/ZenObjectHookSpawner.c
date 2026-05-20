@@ -148,6 +148,9 @@ class ZenObjectHookSpawner
 				
 				if (className.Contains(lookForObj))
 				{
+		            if (!DoesObjectPassChecks(obj))
+		                continue;
+					
 					string posKey = obj.GetPosition().ToString(false);
 					positions.Set(posKey, className);
 					orientationsByPos.Set(posKey, obj.GetOrientation());
@@ -355,6 +358,12 @@ class ZenObjectHookSpawner
 		}
 		
 		return 1.0;
+	}
+	
+	// Override this to do any specialized checks on the object (eg. check its angle threshold for mapgrouppos exporter)
+	bool DoesObjectPassChecks(Object obj)
+	{
+	    return true;
 	}
 	
 	private static bool s_MapGroupPosStarted;

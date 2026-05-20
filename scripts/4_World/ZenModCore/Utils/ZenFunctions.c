@@ -232,6 +232,9 @@ class ZenFunctions: ZenGameFunctions
 	//! Print a debug chat message both client-side & server-side
 	static void DebugMessage(string message)
 	{
+		if (!GetZenCoreConfig().ZenCore_GeneralConfig.AllowDebugChatMessages)
+			return;
+			
 		ZenClientMessage("[CLIENT] " + message);
 		SendGlobalMessage(message);
 	}
@@ -629,6 +632,19 @@ class ZenFunctions: ZenGameFunctions
 		_Payload_ItemPlace payload = new _Payload_ItemPlace(logObjectPlayer, message);
 		GetGameLabs().GetApi().ItemPlace(new _Callback(), payload);
 #endif
+#endif
+	}
+	
+	static void GameLabs_SendChatMessage(PlayerBase player, string chatMessage)
+	{
+#ifdef SERVER
+#ifdef GameLabs
+		if (!player || !player.GetIdentity())
+			return;
+		_LogPlayerEx logObjectPlayer = new _LogPlayerEx(player);
+        _Payload_PlayerChat payloadPlayerChat = new _Payload_PlayerChat(logObjectPlayer, "direct", chatMessage);
+        GetGameLabs().GetApi().PlayerChat(new _Callback(), payloadPlayerChat);
+#endif 
 #endif
 	}
 }

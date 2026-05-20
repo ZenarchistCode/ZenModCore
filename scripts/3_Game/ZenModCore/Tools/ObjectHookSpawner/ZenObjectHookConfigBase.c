@@ -33,7 +33,7 @@ class ZenObjectHookConfigBase: ZenConfigBase
 	
 	bool ShouldSpawn()
 	{
-		return SpawnObjects;
+		return SpawnObjects || SpawnMapGroupPosXML;
 	}
 	
 	bool ShouldOnlyDumpOnce()

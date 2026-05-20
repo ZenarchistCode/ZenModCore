@@ -40,7 +40,7 @@ class ZenCoreConfig : ZenConfigBase
 	}
 	
 	override string 	GetFolderName()       		{ return "Core"; }
-	override string    	GetCurrentVersion()   		{ return "1.29.2"; }
+	override string    	GetCurrentVersion()   		{ return "1.29.3"; }
 	override bool 		ShouldLoadOnClient()		{ return true; }
 	override bool		ShouldLoadOnServer() 		{ return true; }
 	override bool		ShouldSyncToClient()		{ return true; }
@@ -238,11 +238,13 @@ class ZenGeneralConfig
 {
 	bool PreventHologramPlacementAt000;
 	bool DeleteObjectsAt000;
+	bool AllowDebugChatMessages;
 	
 	void ZenGeneralConfig()
 	{
 		PreventHologramPlacementAt000 = false;
 		DeleteObjectsAt000 = false;
+		AllowDebugChatMessages = true;
 	}
 }
 
