@@ -57,13 +57,10 @@ class ZenDiscordAPI
 		_Release(cb);
 	}
 
-	void SendMessage(notnull ZenDiscordMessage msg, Class context = null)
+	void SendMessage(notnull ZenDiscordMessage msg, string contextType = "", string contextId = "")
 	{
-		if (!context)
-			context = this;
-		
-		ZMPrint("[ZenDiscordAPI] Sending webhook - callback context=" + context.ClassName());
-		
+		ZMPrint("[ZenDiscordAPI] Sending webhook - contextType=" + contextType + " contextId=" + contextId);
+
 		string json = msg.GetJSON();
 
 		for (int i = 0; i < msg.GetWebhooks().Count(); i++)
@@ -77,25 +74,18 @@ class ZenDiscordAPI
 				continue;
 			}
 
-			int baseEnd   = idx + DISCORD_API.Length();
+			int baseEnd = idx + DISCORD_API.Length();
 			string baseUrl = full.Substring(0, baseEnd);
-			string route   = full.Substring(baseEnd, full.Length() - baseEnd);
-
-			// OPTIONAL improvement:
-			// Discord returns 204 by default; adding wait=true can return 200 + JSON.
-			// This *may* reduce "error 8 on success" noise depending on RestApi behavior.
-			// route = route + "?wait=true";
+			string route = full.Substring(baseEnd, full.Length() - baseEnd);
 
 			RestContext ctx = GetRestApi().GetRestContext(baseUrl);
 			ctx.SetHeader("application/json");
 
-			ref ZenDiscordWebhookCB cb = new ZenDiscordWebhookCB(this, full, json, context);
+			ref ZenDiscordWebhookCB cb = new ZenDiscordWebhookCB(this, full, json, contextType, contextId);
 			m_Pending.Insert(cb);
 
 			ctx.POST(cb, route, json);
 		}
-
-		delete msg;
 	}
 }
 

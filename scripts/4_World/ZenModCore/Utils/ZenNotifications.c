@@ -1,6 +1,6 @@
 class ZenNotifications
 {
-	static void Notify(PlayerBase player, string title, string message, string icon = "", float time = 5)
+	static void Notify(PlayerBase player, string title, string message, string icon = "", float time = 15)
 	{
 #ifdef SERVER
 		if (player && player.GetIdentity())

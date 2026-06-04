@@ -180,7 +180,7 @@ modded class PlayerBase
 	}
 
 	// Send kill feed info
-	private void ZenKillFeed(notnull PlayerBase playerKiller, notnull Object object)
+	void ZenKillFeed(notnull PlayerBase playerKiller, notnull Object object)
 	{
 		//ZMPrint("Killfeed: Send to kill feed " + playerKiller.GetType() + " obj=" + object.GetType());
 		

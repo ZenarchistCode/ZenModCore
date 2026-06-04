@@ -309,7 +309,7 @@ class ZenObjectHookSpawner
 		
 		if (def.SpawnObjectType == "")
 			return null;
-		
+
 		Object newObj = ZenGameFunctions.SpawnObjectRelative(
 			parentObj,
 			def.SpawnObjectType,
