@@ -56,6 +56,18 @@ modded class MissionServer
 			
 			GetZenCoreConfig().Save();
 		}
+
+		if (GetZenCoreConfig().MapXamURL == "")
+		{
+			if (mapName == "chernarusplus")
+				GetZenCoreConfig().MapXamURL = "https://dayz.xam.nu/";
+			else if (mapName == "enoch")
+				GetZenCoreConfig().MapXamURL = "https://dayz.xam.nu/livonia";
+			else 
+				GetZenCoreConfig().MapXamURL = "https://dayz.xam.nu/" + mapName + "/";
+			
+			GetZenCoreConfig().Save();
+		}
 		
 		GetZenObjectHookSpawner().SpawnOrDump();
 	}

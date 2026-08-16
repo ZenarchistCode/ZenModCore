@@ -142,12 +142,12 @@ class ZenGameFunctions
 	    g_Game.GetObjectsAtPosition3D(position, 0.1, objectsNearby, null);
 		
 		// Delete any existing objects
-	    foreach(Object z_obj : objectsNearby)
+	    foreach (Object z_obj : objectsNearby)
 	    {
 	        if (z_obj.GetType() == type && z_obj.GetPosition() == position && z_obj.GetOrientation() == orientation)
 	        {
-	            //if (!replace)
-	            //    return NULL;
+	            if (!replace)
+	                return NULL;
 	            
 	            g_Game.ObjectDelete(z_obj);
 				Error("DUPLICATE OBJECT FOUND SPAWNED BY INIT.C @ " + position + " - " + type);
@@ -490,38 +490,54 @@ class ZenGameFunctions
 	
 		return count;
 	}
-	
-	// Returns a clickable izurvive map link for the given position
+
+	static bool ConvertDayZToIzurvive(vector pos, int worldSize, out float latitude, out float longitude)
+	{
+		latitude = 0.0;
+		longitude = 0.0;
+
+		if (worldSize <= 0)
+			return false;
+
+		float normalizedX = pos[0] / worldSize;
+		float normalizedZ = pos[2] / worldSize;
+		float mercatorY = ((normalizedZ * 2.0) - 1.0) * Math.PI;
+
+		longitude = (normalizedX * 360.0) - 180.0;
+		latitude = ((2.0 * Math.Atan(Math.Pow(Math.EULER, mercatorY))) - Math.PI_HALF) * Math.RAD2DEG;
+
+		return true;
+	}
+
+	// Returns a clickable izurvive map link for the given position - estimates the longitude/latitude conversion based on map size (not 100% accurate for some maps)
 	static string GetMapLinkPosition(vector pos, string mapName = "")
 	{
-		// get izurvive link
-		string MapURL = GetZenCoreConfig().MapIzurviveURL;
-		string mapLink = "";
+		ZenCoreConfig config = GetZenCoreConfig();
 
-		if (MapURL == "")
+		string linkText = "@ " + pos[0] + " / " + pos[2];
+
+		if (mapName != "")
+			linkText = mapName + " @ " + pos[0] + " / " + pos[2];
+
+		if (config.UseIzurviveURL)
 		{
-			if (mapName != "")
-			{
-				mapLink = mapName + " @ " + pos[0] + " / " + pos[2];
-			}
-			else 
-			{
-				mapLink = "@ " + pos[0] + " / " + pos[2];
-			}
-		}
-		else 
-		{
-			if (mapName != "")
-			{
-				"[" + mapName + " @ " + pos[0] + " / " + pos[2] + "](" + MapURL + "#location=" + pos[0] + ";" + pos[2] + ")";
-			}
-			else 
-			{
-				mapLink = "[@ " + pos[0] + " / " + pos[2] + "](" + MapURL + "#location=" + pos[0] + ";" + pos[2] + ")";
-			}
+			if (config.MapIzurviveURL == "")
+				return linkText;
+
+			float latitude;
+			float longitude;
+			int worldSize = g_Game.GetWorld().GetWorldSize();
+
+			if (!ConvertDayZToIzurvive(pos, worldSize, latitude, longitude))
+				return linkText;
+
+			return "[" + linkText + "](" + config.MapIzurviveURL + "#c=" + latitude + ";" + longitude + ";7)";
 		}
 
-		return mapLink;
+		if (config.MapXamURL == "")
+			return linkText;
+
+		return "[" + linkText + "](" + config.MapXamURL + "#location=" + pos[0] + ";" + pos[2] + ";5)";
 	}
 	
 	// Get readable date formatted
@@ -799,7 +815,9 @@ static void ZMPrint(Object obj)
 
 static void ZMPrint(string s)
 {
-	Print("[ZEN|" + ZMGetDate() + "] " + s);
+	string logMessage = "[ZEN|" + ZMGetDate() + "] " + s;
+	logMessage.Replace("%", " percent"); //! temp fix for: https://feedback.bistudio.com/T199252
+	Print(logMessage);
 }
 
 static void ZMLog(string subFolder, string fileName, string text, bool perDay = true)

@@ -70,7 +70,7 @@ class ZenDiscordAPI
 			int idx = full.IndexOf(DISCORD_API);
 			if (idx < 0)
 			{
-				Print("[ZenDiscordAPI] Invalid Discord webhook URL: " + full);
+				ZMPrint("[ZenDiscordAPI] Invalid Discord webhook URL: " + full);
 				continue;
 			}
 

@@ -111,7 +111,7 @@ class ZenConfigBase
 	bool			ShouldLoadOnClient() 		{ return false; }
 	bool			ShouldSyncToClient()		{ return false; }
 	bool 			ShouldSaveOnShutdown() 		{ return false; }
-	bool 			ShouldDebugPrint()			{ return true; }
+	bool 			ShouldDebugPrint()			{ return false; }
 	bool			HasReceivedSync()			{ return GetZenConfigRegister().HasReceivedSync(this); }
 	
 	// Due to the nature of config registration, all registered configs will load on both client & server

@@ -7,6 +7,8 @@ class ZenNotifications
 		{
 			NotificationSystem.SendNotificationToPlayerExtended(player, time, title, message, icon);
 		}
+#else 
+		NotifyLocal(title, message, icon, time);
 #endif
 	}
 

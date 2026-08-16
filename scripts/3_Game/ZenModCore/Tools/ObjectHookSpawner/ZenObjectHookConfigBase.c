@@ -57,22 +57,24 @@ class ZenObjectHookConfigBase: ZenConfigBase
 	override void AfterLoad()
 	{
 		super.AfterLoad();
-		
+
 		if (g_Game.IsClient())
 			return;
-		
-		// GetDB() will always create the DB file it doesn't exist - so we need to check if the dumpedpos map is blank to detect fresh wipe.
-		// NOTE: If a mod does not detect ANY dumped positions this will cause the server to re-check on every startup: so make sure any target objects truly exist!
-		if (!SpawnMapGroupPosXML && !GetDB().DumpedPositions || GetDB().DumpedPositions.Count() == 0)
+
+		ZenObjectHookDbBase db = GetDB();
+
+		if (!SpawnMapGroupPosXML && (!db || !db.DumpedPositions || db.DumpedPositions.Count() == 0))
 		{
-			ZMPrint("[" + ClassName() + "] DB entries do not exist - fresh object dump enabled.");
+			ZMPrint("[" + ClassName() + "] DB entries do not exist - fresh object dump and spawn enabled.");
+
 			DumpAllObjects = true;
+			SpawnObjects = true;
 		}
-		else 
+		else
 		{
-			ZMPrint("[" + ClassName() + "] DB file already exists: " + GetDB().DumpedPositions.Count() + " entries.");
+			ZMPrint("[" + ClassName() + "] DB file already exists: " + db.DumpedPositions.Count() + " entries.");
 		}
-		
+
 		AfterHookLoaded.Invoke(this);
 	}
 }

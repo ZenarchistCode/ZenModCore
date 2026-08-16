@@ -12,7 +12,7 @@ class ZenDiscordMessage
 
 	void ZenDiscordMessage(string p_user, string avatar = "")
 	{
-		m_Username = Widget.TranslateString(p_user);
+		m_Username = TranslateDiscordString(p_user);
 		m_Webhooks = new array<string>;
 
 		if (avatar == "")
@@ -78,7 +78,7 @@ class ZenDiscordMessage
 	void SetTitle(string p_text, bool autoTranslate = true)
 	{
 		if (autoTranslate)
-			m_Title = Widget.TranslateString(p_text);
+			m_Title = TranslateDiscordString(p_text);
 		else
 			m_Title = p_text;
 	}
@@ -91,8 +91,8 @@ class ZenDiscordMessage
 	void SetMessage(string p_text, bool autoTranslate = true)
 	{
 		if (autoTranslate)
-			m_Message = Widget.TranslateString(p_text);
-		else 
+			m_Message = TranslateDiscordString(p_text);
+		else
 			m_Message = p_text;
 	}
 
@@ -104,8 +104,8 @@ class ZenDiscordMessage
 	void SetFooter(string p_text, bool autoTranslate = true)
 	{
 		if (autoTranslate)
-			m_Footer = Widget.TranslateString(p_text);
-		else 
+			m_Footer = TranslateDiscordString(p_text);
+		else
 			m_Footer = p_text;
 	}
 
@@ -135,5 +135,18 @@ class ZenDiscordMessage
 
 		json.WriteToString(message, false, discordJSON);
 		return discordJSON;
+	}
+
+	protected string TranslateDiscordString(string p_text)
+	{
+		string hashToken = "{ZEN_DISCORD_HASH}";
+		string safeText = p_text;
+
+		safeText.Replace("#", hashToken);
+		safeText.Replace(hashToken + "STR_", "#STR_");
+		safeText = Widget.TranslateString(safeText);
+		safeText.Replace(hashToken, "#");
+
+		return safeText;
 	}
 }

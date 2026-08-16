@@ -40,7 +40,7 @@ class ZenCoreConfig : ZenConfigBase
 	}
 	
 	override string 	GetFolderName()       		{ return "Core"; }
-	override string    	GetCurrentVersion()   		{ return "1.29.3"; }
+	override string    	GetCurrentVersion()   		{ return "1.29.4"; }
 	override bool 		ShouldLoadOnClient()		{ return true; }
 	override bool		ShouldLoadOnServer() 		{ return true; }
 	override bool		ShouldSyncToClient()		{ return true; }
@@ -90,7 +90,9 @@ class ZenCoreConfig : ZenConfigBase
 	// -------------------------
 	// CONFIG VARIABLES
 	// -------------------------
+	bool UseIzurviveURL;
 	string MapIzurviveURL;
+	string MapXamURL;
 	ref ZenAdminConfig ZenCore_AdminConfig;
 	ref ZenGeneralConfig ZenCore_GeneralConfig;
 	ref ZenLoggerConfig ZenCore_LogConfig;
@@ -131,7 +133,9 @@ class ZenCoreConfig : ZenConfigBase
 	// -------------------------
 	override void SetDefaults()
 	{
+		UseIzurviveURL = true;
 		MapIzurviveURL = "";
+		MapXamURL = "";
 		ZenCore_AdminConfig = new ZenAdminConfig();
 		ZenCore_GeneralConfig = new ZenGeneralConfig();
 		ZenCore_LogConfig = new ZenLoggerConfig();

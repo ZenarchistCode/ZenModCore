@@ -4,6 +4,71 @@ class ZenFunctions: ZenGameFunctions
 	static const float	REQUIRED_RAIN = 0.2;			 // Weather rain level required to be considered raining heavy
 	static const float	REQUIRED_OVERCAST = 0.2;		 // Weather overcast level required to be considered raining heavy
 
+	static void DropAllAttachmentsAtPosition(ItemBase parentItem, vector dropPosition)
+	{
+		if (!g_Game.IsServer())
+			return;
+
+		if (!parentItem)
+			return;
+
+		GameInventory parentInventory = parentItem.GetInventory();
+		if (!parentInventory)
+			return;
+
+		array<EntityAI> attachments = new array<EntityAI>;
+
+		int attachmentCount = parentInventory.AttachmentCount();
+		for (int attachmentIndex = 0; attachmentIndex < attachmentCount; attachmentIndex++)
+		{
+			EntityAI attachment = parentInventory.GetAttachmentFromIndex(attachmentIndex);
+			if (attachment)
+			{
+				attachments.Insert(attachment);
+			}
+		}
+
+		vector orientation = parentItem.GetOrientation();
+		vector rotationMatrix[3];
+		float direction[4];
+
+		Math3D.YawPitchRollMatrix(orientation, rotationMatrix);
+		Math3D.MatrixToQuat(rotationMatrix, direction);
+
+		int count = attachments.Count();
+		for (int i = 0; i < count; i++)
+		{
+			EntityAI attachmentItem = attachments.Get(i);
+			if (!attachmentItem)
+				continue;
+
+			ZenFunctions.DropInventoryEntityAtPosition(attachmentItem, dropPosition, direction);
+		}
+	}
+
+	static void DropInventoryEntityAtPosition(EntityAI item, vector dropPosition, float direction[4])
+	{
+		if (!g_Game.IsServer())
+			return;
+
+		if (!item)
+			return;
+
+		GameInventory itemInventory = item.GetInventory();
+		if (!itemInventory)
+			return;
+
+		InventoryLocation sourceLocation = new InventoryLocation;
+		itemInventory.GetCurrentInventoryLocation(sourceLocation);
+
+		InventoryLocation targetLocation = new InventoryLocation;
+		targetLocation.SetGroundEx(item, dropPosition, direction);
+
+		itemInventory.TakeToDst(InventoryMode.SERVER, sourceLocation, targetLocation);
+
+		item.PlaceOnSurface();
+	}
+
 	//! Returns true/false if the given item is found inside the given player's inventory
 	static bool HasItemType(DayZPlayer player, string item)
 	{

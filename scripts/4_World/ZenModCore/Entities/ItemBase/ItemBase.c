@@ -151,7 +151,7 @@ modded class ItemBase
 //			player = PlayerBase.Cast(old_owner.GetHierarchyRootPlayer());
 
 		// If it was not dropped by a player, nothing to log.
-//		if (!player)
+//		if (!player || !player.GetIdentity())
 //			return;
 		
 		//! TODO: We can now check:
