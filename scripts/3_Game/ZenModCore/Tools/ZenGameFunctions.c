@@ -524,14 +524,7 @@ class ZenGameFunctions
 			if (config.MapIzurviveURL == "")
 				return linkText;
 
-			float latitude;
-			float longitude;
-			int worldSize = g_Game.GetWorld().GetWorldSize();
-
-			if (!ConvertDayZToIzurvive(pos, worldSize, latitude, longitude))
-				return linkText;
-
-			return "[" + linkText + "](" + config.MapIzurviveURL + "#c=" + latitude + ";" + longitude + ";7)";
+			return "[" + linkText + "](" + config.MapIzurviveURL + "#location=" + pos[0] + ";" + pos[2] + ";7)";
 		}
 
 		if (config.MapXamURL == "")
@@ -817,7 +810,7 @@ static void ZMPrint(string s)
 {
 	string logMessage = "[ZEN|" + ZMGetDate() + "] " + s;
 	logMessage.Replace("%", " percent"); //! temp fix for: https://feedback.bistudio.com/T199252
-	Print(logMessage);
+	Print(String(logMessage));
 }
 
 static void ZMLog(string subFolder, string fileName, string text, bool perDay = true)
