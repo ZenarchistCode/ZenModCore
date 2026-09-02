@@ -514,6 +514,7 @@ class ZenGameFunctions
 	{
 		ZenCoreConfig config = GetZenCoreConfig();
 
+		string returnText;
 		string linkText = "@ " + pos[0] + " / " + pos[2];
 
 		if (mapName != "")
@@ -524,13 +525,21 @@ class ZenGameFunctions
 			if (config.MapIzurviveURL == "")
 				return linkText;
 
-			return "[" + linkText + "](" + config.MapIzurviveURL + "#location=" + pos[0] + ";" + pos[2] + ";7)";
+			returnText = "[" + linkText + "](" + config.MapIzurviveURL + "#location=" + pos[0] + ";" + pos[2] + ";7)";
+			returnText.ToLower();
+			return returnText;
 		}
 
 		if (config.MapXamURL == "")
-			return linkText;
+		{
+			returnText = linkText;
+			returnText.ToLower();
+			return returnText;
+		}
 
-		return "[" + linkText + "](" + config.MapXamURL + "#location=" + pos[0] + ";" + pos[2] + ";5)";
+		returnText = "[" + linkText + "](" + config.MapXamURL + "#location=" + pos[0] + ";" + pos[2] + ";5)";
+		returnText.ToLower();
+		return returnText;
 	}
 	
 	// Get readable date formatted
